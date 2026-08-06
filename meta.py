@@ -15,7 +15,8 @@ def main_menu():
         print("2. Analyze specific file")
         print("3. Analyze entire folder")
         print("4. Analyze PDF")
-        print("5. Exit")
+        print("5. Analyze Audio")
+        print("6. Exit")
         
         choice = input("\nChoose an option: ")
         
@@ -29,6 +30,8 @@ def main_menu():
         elif choice == "4":
             pdf_menu()
         elif choice == "5":
+            audio_menu ()
+        elif choice == "6":
             print("Closing analyzer.")
             break  # exits the while loop
         else:
@@ -194,8 +197,6 @@ def analyze_specific_file():
 
 
 # === FUNCTION 8: WRITE PDF REPORT ===
-
-
 def write_pdf_report(filepath, metadata):
     report_name = os.path.expanduser("~/storage/downloads/") + os.path.basename(filepath) + "_report.txt"
 
@@ -342,47 +343,59 @@ def audio_menu():
         print("2. Analyze newest audio file in folder")
         print("3. Analyze all audio files in folder")
         print("4. Return to Main Menu")
-        
+
+        extensions = ["*.mp3", "*.ogg", "*.wav", "*.amr",
+                      "*.m4a", "*.flac", "*.opus", "*.wma",
+                      "*.aiff", "*.mp4"]
+
         choice = input("\nChoose an option: ")
         if choice == "1":
             folder = input("Enter folder to search: ")
-            if not pdfs:
-                print("No audio found in that folder.")
+            all_files = []
+            for ext in extensions:
+                all_files += glob.glob(os.path.expanduser(folder + "/" + ext))
+
+            if not all_files:
+                print("No audio files found in that folder.")
             else:
-                recent = sorted(audio, key=os.path.getmtime, reverse=True)[:5]
-        
-                print("\nRecent PDFs:")
-            for i, f in enumerate(recent):
-                print(f"{i+1}. {os.path.basename(f)}")
+                recent = sorted(all_files, key=os.path.getmtime, reverse=True)[:5]
+
+                print("\nRecent audio files:")
+                for i, f in enumerate(recent):
+                    print(f"{i+1}. {os.path.basename(f)}")
                 print(f"{len(recent)+1}. Enter filepath manually")
-        
+
                 pick = input("\nChoose a number: ")
-        
+
                 if pick.isdigit() and 1 <= int(pick) <= len(recent):
-                    extract_pdf_metadata(recent[int(pick)-1])
+                    extract_audio_metadata(recent[int(pick)-1])
                 elif pick == str(len(recent)+1):
                     filepath = input("Enter filepath: ")
-                    extract_pdf_metadata(filepath)
+                    extract_audio_metadata(filepath)
                 else:
                     print("Invalid choice.")
         elif choice == "2":
             folder = input("Enter folder path: ")
-            pdfs = glob.glob(os.path.expanduser(folder + "/*.pdf")) + glob.glob(os.path.expanduser(folder + "/*.PDF"))
-            if not pdfs:
-                print("No PDFs found.")
+            all_files = []
+            for ext in extensions:
+                all_files += glob.glob(os.path.expanduser(folder + "/" + ext))
+            if not all_files:
+                print("No audio files found.")
             else:
-                latest = max(pdfs, key=os.path.getmtime)
+                latest = max(all_files, key=os.path.getmtime)
                 print(f"\nAnalyzing: {latest}")
-                extract_pdf_metadata(latest)
+                extract_audio_metadata(latest)
         elif choice == "3":
             folder = input("Enter folder path: ")
-            pdfs = glob.glob(os.path.expanduser(folder + "/*.pdf")) + glob.glob(os.path.expanduser(folder + "/*.PDF"))
-            if not pdfs:
-                print("No PDFs found.")
+            all_files = []
+            for ext in extensions:
+                all_files += glob.glob(os.path.expanduser(folder + "/" + ext))
+            if not all_files:
+                print("No audio files found.")
             else:
-                for filepath in pdfs:
+                for filepath in all_files:
                     print(f"\nAnalyzing: {filepath}")
-                    extract_pdf_metadata(filepath)
+                    extract_audio_metadata(filepath)
         elif choice == "4":
             break
         else:
